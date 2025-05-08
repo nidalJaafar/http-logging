@@ -1,0 +1,32 @@
+name: Publish Versioned Release to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      - name: Set execute permission
+        run: chmod +x ./gradlew
+
+      - name: Publish to GitHub Packages
+        env:
+          USERNAME: ${{ secrets.GPR_USER }}
+          TOKEN: ${{ secrets.GPR_TOKEN }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ./gradlew publish -PreleaseVersion=$VERSION
